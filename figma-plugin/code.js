@@ -23,6 +23,11 @@ function pathOf(collectionName, variableName) {
   return [collectionName.trim().toLowerCase(), ...variableName.split('/').map((s) => s.trim())];
 }
 
+function currentUserName() {
+  // Needs "permissions": ["currentuser"] in manifest.json; never let it break the export.
+  try { return (figma.currentUser && figma.currentUser.name) || 'a designer'; } catch (e) { return 'a designer'; }
+}
+
 async function exportTokens() {
   const collections = await figma.variables.getLocalVariableCollectionsAsync();
   const tree = {};
@@ -95,7 +100,7 @@ async function exportTokens() {
     counts,
     warnings,
     fileName: figma.root.name,
-    user: figma.currentUser ? figma.currentUser.name : 'a designer',
+    user: currentUserName(),
   };
 }
 

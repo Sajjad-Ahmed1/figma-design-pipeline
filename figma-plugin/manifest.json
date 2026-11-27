@@ -4,10 +4,17 @@
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
-  "editorType": ["figma"],
+  "editorType": [
+    "figma"
+  ],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["https://api.github.com"],
+    "allowedDomains": [
+      "https://api.github.com"
+    ],
     "reasoning": "Commits the exported design tokens to your GitHub repository and reads the GitHub Actions status."
-  }
+  },
+  "permissions": [
+    "currentuser"
+  ]
 }

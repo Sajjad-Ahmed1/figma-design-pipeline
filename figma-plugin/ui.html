@@ -156,6 +156,7 @@ function showMsg(text, kind = 'err') {
   const m = $('msg');
   m.textContent = text;
   m.className = 'msg' + (text ? ` show ${kind}` : '');
+  if (text && kind !== 'ok') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function gh(path, opts = {}) {
@@ -322,7 +323,11 @@ window.onmessage = (event) => {
     renderCounts(msg.result.counts);
     if ($('sync').disabled && document.querySelector('li[data-k="export"]').className === 'running') pushAndWatch(msg.result);
   }
-  if (msg.type === 'error') { showMsg(msg.message); $('sync').disabled = false; }
+  if (msg.type === 'error') {
+    $('counts').innerHTML = '<div class="chip"><b>!</b><span>could not read variables</span></div>';
+    showMsg(msg.message);
+    $('sync').disabled = !(settings.owner && settings.repo && settings.token);
+  }
 };
 
 post({ type: 'load-settings' });
