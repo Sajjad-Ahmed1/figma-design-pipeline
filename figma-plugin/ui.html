@@ -173,7 +173,7 @@ async function gh(path, opts = {}) {
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) {
     const hint = res.status === 401 ? ' — token is invalid or expired'
-      : res.status === 403 ? ' — token lacks a permission for this repository'
+      : res.status === 403 ? ' — the token is missing a permission. It needs Contents: Read and write, Actions: Read-only, Pull requests: Read-only for this repository'
       : res.status === 404 ? ' — repository/branch not found, or the token cannot see it' : '';
     throw new Error(`GitHub ${res.status}: ${(data && data.message) || res.statusText}${hint}`);
   }
@@ -212,7 +212,7 @@ $('save').onclick = async () => {
     await gh(`/repos/${settings.owner}/${settings.repo}/git/ref/heads/${settings.base}`);
     if (!r.permissions || !r.permissions.push) throw new Error('Token can read the repository but cannot push to it.');
     post({ type: 'save-settings', settings });
-    showMsg(`Connected to ${r.full_name}`, 'ok');
+    showMsg(`Connected to ${r.full_name}. Read access verified — write access (Contents: Read and write) is checked on the first Sync.`, 'ok');
   } catch (e) { showMsg(e.message); }
 };
 $('clear').onclick = () => { post({ type: 'clear-settings' }); showMsg('Token removed from this computer.', 'ok'); };
