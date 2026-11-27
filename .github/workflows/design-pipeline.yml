@@ -35,7 +35,7 @@ jobs:
         run: npm run validate
       - name: Upload validation report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: validation-report
           path: reports/validation.json
@@ -81,7 +81,7 @@ jobs:
             git push
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: generated-tokens
           path: build/
