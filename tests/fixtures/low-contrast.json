@@ -1,0 +1,78 @@
+{
+  "color": {
+    "$type": "color",
+    "brand": {
+      "primary": {
+        "$value": "#C9C2FF"
+      },
+      "secondary": {
+        "$value": "#00A889"
+      }
+    },
+    "neutral": {
+      "0": {
+        "$value": "#FFFFFF"
+      },
+      "100": {
+        "$value": "#F2F2F7"
+      },
+      "900": {
+        "$value": "#12121A"
+      }
+    },
+    "feedback": {
+      "danger": {
+        "$value": "#D92D3A"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "{color.neutral.900}"
+      },
+      "on-primary": {
+        "$value": "{color.neutral.0}"
+      }
+    },
+    "surface": {
+      "default": {
+        "$value": "{color.neutral.0}"
+      },
+      "subtle": {
+        "$value": "{color.neutral.100}"
+      }
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "xs": {
+      "$value": "4px"
+    },
+    "sm": {
+      "$value": "8px"
+    },
+    "md": {
+      "$value": "16px"
+    },
+    "lg": {
+      "$value": "24px"
+    },
+    "xl": {
+      "$value": "40px"
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "sm": {
+      "$value": "4px"
+    },
+    "md": {
+      "$value": "8px"
+    },
+    "lg": {
+      "$value": "16px"
+    },
+    "full": {
+      "$value": "999px"
+    }
+  }
+}

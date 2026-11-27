@@ -1,0 +1,20 @@
+{
+  "$comment": "Design-system rules enforced by scripts/validate.mjs. Edit these, not the script.",
+  "collections": {
+    "color": { "type": "color" },
+    "spacing": { "type": "dimension", "min": 0, "max": 256 },
+    "radius": { "type": "dimension", "min": 0, "max": 9999 }
+  },
+  "requiredTokens": [
+    "color.brand.primary",
+    "color.text.primary",
+    "color.text.on-primary",
+    "color.surface.default",
+    "spacing.md",
+    "radius.md"
+  ],
+  "contrast": [
+    { "foreground": "color.text.on-primary", "background": "color.brand.primary", "min": 4.5, "label": "Button text on primary" },
+    { "foreground": "color.text.primary", "background": "color.surface.default", "min": 4.5, "label": "Body text on surface" }
+  ]
+}

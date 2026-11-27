@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root {
+    --bg: #0A0E1A;
+    --surface: #111827;
+    --text: #F0F4FF;
+    --muted: #6B7A99;
+    --blue: #4F8EF7;
+    --violet: #7C4DFF;
+    --ok: #34D399;
+    --bad: #F87171;
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --radius: 16px;
+    --t: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; min-height: 100vh;
+    font: 13px/1.5 Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(120% 60% at 0% 0%, rgba(124, 77, 255, 0.28), transparent 60%),
+      radial-gradient(100% 50% at 100% 100%, rgba(79, 142, 247, 0.22), transparent 60%),
+      var(--bg);
+  }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  .sub { color: var(--muted); font-size: 12px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo { display: flex; gap: 10px; align-items: center; }
+  .mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--violet), var(--blue)); display: grid; place-items: center; font-weight: 700; }
+  .card {
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
+    backdrop-filter: blur(20px); padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset; transition: var(--t);
+    animation: in 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  label { display: block; font-size: 11px; color: var(--muted); margin: 8px 0 4px; }
+  input {
+    width: 100%; padding: 9px 11px; border-radius: 10px; color: var(--text);
+    background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); font: inherit; transition: var(--t);
+  }
+  input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79,142,247,0.2); }
+  .row { display: flex; gap: 8px; }
+  .row > div { flex: 1; }
+  button {
+    border: 0; border-radius: 12px; padding: 10px 14px; font: 600 13px Inter, system-ui, sans-serif;
+    cursor: pointer; color: var(--text); background: rgba(255,255,255,0.08); transition: var(--t);
+  }
+  button:hover:not(:disabled) { transform: scale(1.03); filter: brightness(1.1); }
+  button:active:not(:disabled) { transform: scale(0.97); transition-duration: 0.1s; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .primary {
+    width: 100%; padding: 14px; font-size: 14px;
+    background: linear-gradient(135deg, var(--violet), var(--blue));
+    box-shadow: 0 8px 24px rgba(124, 77, 255, 0.35);
+  }
+  .link { background: none; color: var(--blue); padding: 0; font-weight: 500; }
+  .counts { display: flex; gap: 8px; margin-top: 4px; }
+  .chip { flex: 1; text-align: center; padding: 8px; border-radius: 10px; background: rgba(0,0,0,0.25); }
+  .chip b { display: block; font-size: 18px; letter-spacing: -0.02em; }
+  .chip span { color: var(--muted); font-size: 11px; text-transform: capitalize; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 10px; padding: 8px 0; color: var(--muted); transition: var(--t); }
+  li + li { border-top: 1px solid rgba(255,255,255,0.05); }
+  li .icon { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; border: 1px solid var(--glass-border); flex: none; transition: var(--t); }
+  li .text { flex: 1; }
+  li a { color: var(--blue); text-decoration: none; font-size: 12px; }
+  li.running { color: var(--text); }
+  li.running .icon { border-color: var(--blue); border-top-color: transparent; animation: spin 0.8s linear infinite; }
+  li.done { color: var(--text); }
+  li.done .icon { background: var(--ok); border-color: var(--ok); color: #05261a; }
+  li.failed { color: var(--bad); }
+  li.failed .icon { background: var(--bad); border-color: var(--bad); color: #300; }
+  li.skipped .icon { opacity: 0.4; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .msg { font-size: 12px; padding: 10px 12px; border-radius: 10px; margin-top: 10px; display: none; white-space: pre-wrap; }
+  .msg.show { display: block; }
+  .msg.err { background: rgba(248,113,113,0.12); color: #FCA5A5; }
+  .msg.warn { background: rgba(251,191,36,0.10); color: #FCD34D; }
+  .msg.ok { background: rgba(52,211,153,0.12); color: #6EE7B7; }
+  details summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  details summary::-webkit-details-marker { display: none; }
+  .hint { color: var(--muted); font-size: 11px; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="mark">◆</div>
+      <div><h1>Design Pipeline</h1><div class="sub" id="repoLabel">Not connected</div></div>
+    </div>
+  </header>
+
+  <details class="card" id="settingsCard">
+    <summary><b>GitHub settings</b><span class="sub" id="settingsState">Set up</span></summary>
+    <div class="row">
+      <div><label for="owner">Owner</label><input id="owner" placeholder="your-github-user" /></div>
+      <div><label for="repo">Repository</label><input id="repo" placeholder="figma-design-pipeline" /></div>
+    </div>
+    <label for="base">Base branch</label><input id="base" value="main" />
+    <label for="token">Fine-grained token</label><input id="token" type="password" placeholder="github_pat_…" autocomplete="off" />
+    <div class="hint">Stored only on this computer (figma.clientStorage). Needs: Contents read/write, Actions read, Pull requests read — for this one repository.</div>
+    <div class="row" style="margin-top:10px">
+      <button id="save">Save &amp; test</button>
+      <button id="clear" class="link">Forget token</button>
+    </div>
+  </details>
+
+  <div class="card">
+    <div class="sub">Variables in this file</div>
+    <div class="counts" id="counts"><div class="chip"><b>–</b><span>loading</span></div></div>
+  </div>
+
+  <button class="primary" id="sync">Sync to GitHub</button>
+
+  <div class="card" style="margin-top:12px">
+    <ol id="stages">
+      <li data-k="export"><span class="icon"></span><span class="text">Export Figma variables</span></li>
+      <li data-k="push"><span class="icon"></span><span class="text">Push to GitHub</span><a target="_blank" id="branchLink"></a></li>
+      <li data-k="1"><span class="icon"></span><span class="text">Tokens Validated</span></li>
+      <li data-k="2"><span class="icon"></span><span class="text">CSS &amp; Dart Generated</span></li>
+      <li data-k="3"><span class="icon"></span><span class="text">Pull Request Created</span><a target="_blank" id="prLink"></a></li>
+    </ol>
+    <div class="msg" id="msg"></div>
+    <a target="_blank" id="runLink" class="hint" style="display:none;color:var(--blue)">Open the GitHub Actions run ↗</a>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const API = 'https://api.github.com';
+let settings = {};
+let lastExport = null;
+
+const post = (m) => parent.postMessage({ pluginMessage: m }, '*');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function stage(k, state, extra) {
+  const li = document.querySelector(`li[data-k="${k}"]`);
+  li.className = state || '';
+  li.querySelector('.icon').textContent = state === 'done' ? '✓' : state === 'failed' ? '✕' : state === 'skipped' ? '–' : '';
+  if (extra) li.querySelector('.text').textContent = extra;
+}
+function resetStages() {
+  const labels = { export: 'Export Figma variables', push: 'Push to GitHub', 1: 'Tokens Validated', 2: 'CSS & Dart Generated', 3: 'Pull Request Created' };
+  for (const [k, t] of Object.entries(labels)) stage(k, '', t);
+  for (const id of ['branchLink', 'prLink']) { $(id).textContent = ''; $(id).removeAttribute('href'); }
+  $('runLink').style.display = 'none';
+  showMsg('');
+}
+function showMsg(text, kind = 'err') {
+  const m = $('msg');
+  m.textContent = text;
+  m.className = 'msg' + (text ? ` show ${kind}` : '');
+}
+
+async function gh(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: {
+      Authorization: `Bearer ${settings.token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+  });
+  if (res.status === 404 && opts.allow404) return null;
+  const data = res.status === 204 ? null : await res.json().catch(() => null);
+  if (!res.ok) {
+    const hint = res.status === 401 ? ' — token is invalid or expired'
+      : res.status === 403 ? ' — token lacks a permission for this repository'
+      : res.status === 404 ? ' — repository/branch not found, or the token cannot see it' : '';
+    throw new Error(`GitHub ${res.status}: ${(data && data.message) || res.statusText}${hint}`);
+  }
+  return data;
+}
+
+const b64encode = (s) => { const bytes = new TextEncoder().encode(s); let bin = ''; bytes.forEach((b) => (bin += String.fromCharCode(b))); return btoa(bin); };
+const b64decode = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, '')), (c) => c.charCodeAt(0)));
+
+function renderCounts(counts) {
+  const entries = Object.entries(counts);
+  $('counts').innerHTML = entries.length
+    ? entries.map(([k, n]) => `<div class="chip"><b>${n}</b><span>${k}</span></div>`).join('')
+    : '<div class="chip"><b>0</b><span>no variables</span></div>';
+}
+function renderSettings() {
+  for (const k of ['owner', 'repo', 'base']) if (settings[k]) $(k).value = settings[k];
+  $('token').value = settings.token ? '••••••••••••' : '';
+  const ready = settings.owner && settings.repo && settings.token;
+  $('repoLabel').textContent = ready ? `${settings.owner}/${settings.repo} · ${settings.base || 'main'}` : 'Not connected';
+  $('settingsState').textContent = ready ? 'Connected' : 'Set up';
+  $('settingsCard').open = !ready;
+  $('sync').disabled = !ready;
+}
+
+$('save').onclick = async () => {
+  const tokenInput = $('token').value.trim();
+  settings = {
+    owner: $('owner').value.trim(),
+    repo: $('repo').value.trim(),
+    base: $('base').value.trim() || 'main',
+    token: tokenInput && !tokenInput.startsWith('•') ? tokenInput : settings.token,
+  };
+  try {
+    const r = await gh(`/repos/${settings.owner}/${settings.repo}`);
+    await gh(`/repos/${settings.owner}/${settings.repo}/git/ref/heads/${settings.base}`);
+    if (!r.permissions || !r.permissions.push) throw new Error('Token can read the repository but cannot push to it.');
+    post({ type: 'save-settings', settings });
+    showMsg(`Connected to ${r.full_name}`, 'ok');
+  } catch (e) { showMsg(e.message); }
+};
+$('clear').onclick = () => { post({ type: 'clear-settings' }); showMsg('Token removed from this computer.', 'ok'); };
+
+$('sync').onclick = async () => {
+  resetStages();
+  $('sync').disabled = true;
+  stage('export', 'running');
+  post({ type: 'export' });
+};
+
+async function pushAndWatch(result) {
+  const { owner, repo } = settings;
+  const base = settings.base || 'main';
+  const R = `/repos/${owner}/${repo}`;
+  try {
+    stage('export', 'done', `Exported ${Object.values(result.counts).reduce((a, b) => a + b, 0)} variables`);
+    if (result.warnings.length) showMsg(result.warnings.join('\n'), 'warn');
+
+    stage('push', 'running');
+    const ref = await gh(`${R}/git/ref/heads/${base}`);
+    const current = await gh(`${R}/contents/tokens/tokens.json?ref=${base}`, { allow404: true });
+    if (current && b64decode(current.content) === result.json) {
+      stage('push', 'done', 'No changes — already in sync');
+      for (const k of ['1', '2', '3']) stage(k, 'skipped');
+      post({ type: 'notify', text: 'Tokens already match GitHub — nothing to sync.' });
+      return;
+    }
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+    const branch = `figma/sync-${stamp}`;
+    await gh(`${R}/git/refs`, { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: ref.object.sha }) });
+    const commit = await gh(`${R}/contents/tokens/tokens.json`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `design(tokens): sync from Figma "${result.fileName}" by ${result.user}`,
+        content: b64encode(result.json),
+        branch,
+        ...(current ? { sha: current.sha } : {}),
+      }),
+    });
+    stage('push', 'done', `Pushed ${branch}`);
+    $('branchLink').textContent = commit.commit.sha.slice(0, 7);
+    $('branchLink').href = commit.commit.html_url;
+
+    await watchRun(R, branch, commit.commit.sha);
+  } catch (e) {
+    const running = document.querySelector('li.running');
+    if (running) stage(running.dataset.k, 'failed');
+    showMsg(e.message);
+  } finally {
+    $('sync').disabled = false;
+  }
+}
+
+async function watchRun(R, branch, sha) {
+  for (const k of ['1', '2', '3']) stage(k, '');
+  stage('1', 'running');
+  let run = null;
+  const started = Date.now();
+  while (Date.now() - started < 10 * 60 * 1000) {
+    await sleep(3000);
+    if (!run) {
+      const runs = await gh(`${R}/actions/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=5`);
+      run = runs.workflow_runs.find((r) => r.head_sha === sha) || null;
+      if (!run) continue;
+      $('runLink').href = run.html_url;
+      $('runLink').style.display = 'inline-block';
+    }
+    const { jobs } = await gh(`${R}/actions/runs/${run.id}/jobs`);
+    for (const job of jobs) {
+      const k = job.name.trim().charAt(0);
+      if (!['1', '2', '3'].includes(k)) continue;
+      if (job.status !== 'completed') stage(k, job.status === 'in_progress' ? 'running' : '');
+      else stage(k, job.conclusion === 'success' ? 'done' : job.conclusion === 'skipped' ? 'skipped' : 'failed');
+    }
+    const latest = await gh(`${R}/actions/runs/${run.id}`);
+    if (latest.status === 'completed') {
+      if (latest.conclusion === 'success') {
+        const prs = await gh(`${R}/pulls?head=${settings.owner}:${encodeURIComponent(branch)}&state=open`);
+        if (prs.length) { $('prLink').textContent = `#${prs[0].number}`; $('prLink').href = prs[0].html_url; }
+        showMsg('Pipeline passed. Review the pull request on GitHub.', 'ok');
+        post({ type: 'notify', text: '✓ Tokens validated · CSS generated · PR created' });
+      } else {
+        const failedJob = jobs.find((j) => j.conclusion === 'failure');
+        let detail = '';
+        if (failedJob) {
+          try {
+            const notes = await gh(`${R}/check-runs/${failedJob.id}/annotations`);
+            detail = notes.filter((n) => n.annotation_level === 'failure' && n.title === 'Token error').map((n) => '• ' + n.message).join('\n');
+          } catch (_) { /* annotations need Checks access; the run link still works */ }
+        }
+        showMsg(`Pipeline failed at “${failedJob ? failedJob.name : 'a stage'}”. No pull request was opened.${detail ? '\n\n' + detail : ''}`);
+        post({ type: 'notify', text: '✕ Design pipeline failed — see plugin for details', error: true });
+      }
+      return;
+    }
+  }
+  showMsg('Still running after 10 minutes — check the Actions run link.', 'warn');
+}
+
+window.onmessage = (event) => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+  if (msg.type === 'settings') { settings = msg.settings || {}; renderSettings(); }
+  if (msg.type === 'settings-saved') renderSettings();
+  if (msg.type === 'exported') {
+    lastExport = msg.result;
+    renderCounts(msg.result.counts);
+    if ($('sync').disabled && document.querySelector('li[data-k="export"]').className === 'running') pushAndWatch(msg.result);
+  }
+  if (msg.type === 'error') { showMsg(msg.message); $('sync').disabled = false; }
+};
+
+post({ type: 'load-settings' });
+post({ type: 'export' }); // initial preview of counts
+</script>
+</body>
+</html>

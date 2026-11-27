@@ -1,0 +1,21 @@
+{
+  "name": "figma-design-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Figma Variables → GitHub → validated design tokens → CSS & Dart → Pull Request",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs tokens/tokens.json",
+    "build": "node scripts/build.mjs",
+    "summary": "node scripts/summary.mjs",
+    "test": "node scripts/test.mjs",
+    "pipeline": "npm run validate && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "style-dictionary": "^4.4.0"
+  }
+}

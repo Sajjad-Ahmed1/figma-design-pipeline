@@ -1,0 +1,13 @@
+{
+  "name": "Design Pipeline — Sync to GitHub",
+  "id": "figma-design-pipeline-dev",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["https://api.github.com"],
+    "reasoning": "Commits the exported design tokens to your GitHub repository and reads the GitHub Actions status."
+  }
+}

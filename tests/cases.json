@@ -1,0 +1,74 @@
+[
+  {
+    "name": "valid file passes",
+    "fixture": "valid.json",
+    "exit": 0,
+    "expect": "Tokens Validated"
+  },
+  {
+    "name": "malformed hex is rejected",
+    "fixture": "bad-hex.json",
+    "exit": 1,
+    "expect": "invalid color \"#5B3DF\""
+  },
+  {
+    "name": "low contrast fails WCAG gate",
+    "fixture": "low-contrast.json",
+    "exit": 1,
+    "expect": "WCAG contrast"
+  },
+  {
+    "name": "alias to missing token is rejected",
+    "fixture": "broken-alias.json",
+    "exit": 1,
+    "expect": "does not exist"
+  },
+  {
+    "name": "negative spacing is rejected",
+    "fixture": "negative-spacing.json",
+    "exit": 1,
+    "expect": "below the minimum"
+  },
+  {
+    "name": "unitless dimension is rejected",
+    "fixture": "unitless.json",
+    "exit": 1,
+    "expect": "invalid dimension"
+  },
+  {
+    "name": "non kebab-case name is rejected",
+    "fixture": "bad-name.json",
+    "exit": 1,
+    "expect": "kebab-case"
+  },
+  {
+    "name": "missing required token is rejected",
+    "fixture": "missing-required.json",
+    "exit": 1,
+    "expect": "required token \"color.surface.default\""
+  },
+  {
+    "name": "circular alias is rejected",
+    "fixture": "circular-alias.json",
+    "exit": 1,
+    "expect": "circular alias"
+  },
+  {
+    "name": "CSS name collision is rejected",
+    "fixture": "duplicate-name.json",
+    "exit": 1,
+    "expect": "collides with"
+  },
+  {
+    "name": "alias to wrong type is rejected",
+    "fixture": "type-mismatch-alias.json",
+    "exit": 1,
+    "expect": "alias points to a dimension"
+  },
+  {
+    "name": "broken JSON is rejected",
+    "fixture": "not-json.json",
+    "exit": 1,
+    "expect": "cannot read/parse"
+  }
+]

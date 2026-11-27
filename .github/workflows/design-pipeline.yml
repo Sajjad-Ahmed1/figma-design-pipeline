@@ -1,0 +1,139 @@
+name: Design Pipeline
+
+# Runs when the Figma plugin pushes a sync branch (figma/sync-…),
+# and on manual pull requests that touch tokens.
+on:
+  push:
+    branches: ['figma/**']
+    paths: ['tokens/**', 'pipeline.config.json']
+  pull_request:
+    branches: [main]
+    paths: ['tokens/**', 'pipeline.config.json']
+  workflow_dispatch:
+
+concurrency:
+  group: design-pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: 1 · Validate Tokens
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Self-test the validator
+        run: npm test
+      - name: Validate tokens/tokens.json
+        run: npm run validate
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: reports/validation.json
+
+  build:
+    name: 2 · Generate CSS & Dart
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build with Style Dictionary
+        run: npm run build
+      - name: Show generated CSS
+        run: |
+          {
+            echo '## ✅ CSS Generated'
+            echo '```css'; cat build/css/tokens.css; echo '```'
+            echo '## ✅ Dart Generated'
+            echo '```dart'; cat build/dart/tokens.dart; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit generated files to the sync branch
+        id: commit
+        if: github.event_name == 'push'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build/
+          if git diff --cached --quiet; then
+            echo "Generated files already up to date."
+          else
+            git commit -m "build: generate CSS & Dart from design tokens"
+            git push
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-tokens
+          path: build/
+
+  pull-request:
+    name: 3 · Create Pull Request
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ${{ github.ref_name }}
+      SHA: ${{ needs.build.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Summarize token changes vs main
+        run: |
+          git show origin/main:tokens/tokens.json > /tmp/base-tokens.json 2>/dev/null || echo '{}' > /tmp/base-tokens.json
+          npm run -s validate
+          node scripts/summary.mjs /tmp/base-tokens.json tokens/tokens.json
+      - name: Open or update the pull request
+        id: pr
+        run: |
+          existing=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --body-file reports/pr-body.md
+            url="$existing"
+          else
+            url=$(gh pr create --base main --head "$BRANCH" \
+              --title "🎨 Design tokens from Figma (${BRANCH#figma/})" \
+              --body-file reports/pr-body.md)
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "## ✅ Pull Request Created" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Mark pipeline stages on the PR commit
+        run: |
+          for ctx in "1 · Tokens Validated" "2 · CSS & Dart Generated" "3 · Pull Request Created"; do
+            gh api "repos/${{ github.repository }}/statuses/$SHA" \
+              -f state=success -f context="Design Pipeline / $ctx" \
+              -f description="Passed in run #${{ github.run_number }}" \
+              -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" > /dev/null
+          done
