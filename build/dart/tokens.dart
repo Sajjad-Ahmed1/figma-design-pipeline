@@ -5,7 +5,7 @@
 import 'package:flutter/painting.dart';
 
 abstract final class AppColors {
-  static const Color brandPrimary = Color(0xFF5B3DF5);
+  static const Color brandPrimary = Color(0xFFC2410C);
   static const Color brandSecondary = Color(0xFF00A889);
   static const Color neutral0 = Color(0xFFFFFFFF);
   static const Color neutral100 = Color(0xFFF2F2F7);
