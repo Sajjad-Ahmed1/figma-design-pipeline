@@ -1,13 +1,13 @@
 name: Design Pipeline
 
-# Runs when the Figma plugin pushes a sync branch (figma/sync-…),
-# and on manual pull requests that touch tokens.
+# Runs on every push that touches tokens, except to main.
+# - figma/** branches (pushed by the plugin): validate → build → open PR
+# - any other branch (manual edits): validate → build, no auto PR
+# There is deliberately no pull_request trigger: the PR opened by stage 3
+# would start a second, approval-gated run on the same commit.
 on:
   push:
-    branches: ['figma/**']
-    paths: ['tokens/**', 'pipeline.config.json']
-  pull_request:
-    branches: [main]
+    branches-ignore: [main]
     paths: ['tokens/**', 'pipeline.config.json']
   workflow_dispatch:
 
@@ -89,7 +89,7 @@ jobs:
   pull-request:
     name: 3 · Create Pull Request
     needs: build
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && startsWith(github.ref_name, 'figma/')
     runs-on: ubuntu-latest
     permissions:
       contents: read
